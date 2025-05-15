@@ -1,7 +1,9 @@
 import random
 import sys
 import matplotlib.pyplot as plt
-
+import pandas as pd
+from openpyxl import Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
 
 
 def generar_cromosoma(bits):
@@ -147,7 +149,25 @@ def hacer_grafica(maximos,minimos,promedios,cant_individuos,cant_corridas):
     plt.tight_layout()
     plt.show()
 
-
+def hacer_tabla(maximos,minimos,promedios,cant_individuos,cant_corridas):
+    for i in range(cant_corridas):
+        promedios[i] = promedios[i]/cant_individuos
+    df = pd.DataFrame(list(zip(maximos,minimos,promedios)),columns=['Valor Maximo','Valor Minimo','Promedio'])
+    wb = Workbook()
+    ws = wb.active
+    cont = 0
+    for r in dataframe_to_rows(df, index=True, header=True):
+        if (cont == 0):
+            r[0] = "Generacion"
+        if (cont >= 2):
+            r[0] = r[0]+1
+        print(r)
+        ws.append(r)
+        cont += 1
+    for cell in ws['A'] + ws[1]:
+        cell.style = 'Pandas'
+    wb.save("pandas_openpyxl.xlsx")
+    
 
 def main():
     if (len(sys.argv) != 11 or sys.argv[1] != "-c" or sys.argv[3] != "-m" or sys.argv[5] != "-n" or sys.argv[7] != "-o" or sys.argv[9] != "-g"):
@@ -197,9 +217,8 @@ def main():
         print(f"Valor minimo en poblacion {i}: {valormin_por_ciclo[i]}")
         print(f"Promedio de poblacion {i}: {sumas_obj_por_ciclo[i]/cant_individuos}")
         print("========================================================================")
-
+    hacer_tabla(valormax_por_ciclo,valormin_por_ciclo,sumas_obj_por_ciclo,cant_individuos,generaciones)
     hacer_grafica(valormax_por_ciclo,valormin_por_ciclo,sumas_obj_por_ciclo,cant_individuos,generaciones)
-
    
 
 main()
